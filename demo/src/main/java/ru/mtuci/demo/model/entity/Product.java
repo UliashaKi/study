@@ -7,49 +7,30 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
-import ru.mtuci.demo.model.Role;
 
 @Entity
-@Table(name = "users")
+@Table(name = "products")
 @Data
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class User {
-    
+public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String login;
+    private String name;
 
     @Column(nullable = false)
-    private String passwordHash;
+    private Boolean blocked;
 
-    @Column(unique = true, nullable = false)
-    private String email;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
-
-    @OneToMany(mappedBy = "owner")
-    private List<License> ownedLicenses;
-
-    @OneToMany(mappedBy = "user")
-    private List<License> usedLicenses;
-
-    @OneToMany(mappedBy = "user")
-    private List<Device> devices;
-
-    @OneToMany(mappedBy = "user")
-    private List<LicenseHistory> licenseHistories;
+    @OneToMany(mappedBy = "product")
+    private List<License> licenses;
 
 }
