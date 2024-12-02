@@ -35,7 +35,7 @@ public class DeviceService {
     return deviceRepo.findByUserId(userId);
   }
 
-  public void removeDevice(long id) {
+  public void removeDeviceById(long id) {
     deviceRepo.deleteById(id);
   }
   

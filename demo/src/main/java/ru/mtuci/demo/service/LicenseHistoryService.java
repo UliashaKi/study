@@ -22,7 +22,7 @@ public class LicenseHistoryService {
   public List<LicenseHistory> getAllLicenseHistories() {
     return licenseHistoryRepo.findAll();
   }
-  
+
   public LicenseHistory getLicenseHistoryById(long id) throws NotFoundException {
     return licenseHistoryRepo.findById(id).orElseThrow(() -> new NotFoundException("История лицензии с таким id не найдена"));
   }
@@ -35,7 +35,7 @@ public class LicenseHistoryService {
     return licenseHistoryRepo.findByUserId(userId);
   }
 
-  public void removeLicenseHistory(long id) {
+  public void removeLicenseHistoryById(long id) {
     licenseHistoryRepo.deleteById(id);
   }
   

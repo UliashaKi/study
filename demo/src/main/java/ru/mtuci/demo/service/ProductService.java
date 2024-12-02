@@ -31,7 +31,7 @@ public class ProductService {
     return productRepo.findByName(name).orElseThrow(() -> new NotFoundException("Продукт с таким именем не найден"));
   }
 
-  public void removeProduct(long id) {
+  public void removeProductById(long id) {
     productRepo.deleteById(id);
   }
 

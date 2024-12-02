@@ -31,7 +31,7 @@ public class LicenseTypeService {
     return licenseTypeRepo.findByName(name).orElseThrow(() -> new NotFoundException("Тип лицензии с таким именем не найден"));
   }
 
-  public void removeLicenseType(long id) {
+  public void removeLicenseTypeById(long id) {
     licenseTypeRepo.deleteById(id);
   }
 

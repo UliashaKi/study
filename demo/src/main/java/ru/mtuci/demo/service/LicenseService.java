@@ -39,7 +39,7 @@ public class LicenseService {
     return licenseRepo.findByUserId(userId);
   }
 
-  public void removeLicense(long id) {
+  public void removeLicenseById(long id) {
     licenseRepo.deleteById(id);
   }
   

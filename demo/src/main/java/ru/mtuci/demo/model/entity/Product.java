@@ -17,7 +17,7 @@ import lombok.Data;
 @Entity
 @Table(name = "products")
 @Data
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Product.class)
 public class Product {
 
     @Id

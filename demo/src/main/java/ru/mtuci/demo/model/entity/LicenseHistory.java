@@ -18,7 +18,7 @@ import lombok.Data;
 @Entity
 @Table(name = "license_histories")
 @Data
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = LicenseHistory.class)
 public class LicenseHistory {
 
     @Id

@@ -20,7 +20,7 @@ import ru.mtuci.demo.model.Role;
 @Entity
 @Table(name = "users")
 @Data
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = User.class)
 public class User {
     
     @Id
