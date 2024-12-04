@@ -36,8 +36,14 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest req) throws DemoException {
-        if (req.login() == null || req.email() == null || req.password() == null) {
-            throw new DemoException("Не все поля заполнены");
+        if (req.login() == null) {
+            throw new DemoException("Не указан логин");
+        }
+        if (req.email() == null) {
+            throw new DemoException("Не указан email");
+        }
+        if (req.password() == null) {
+            throw new DemoException("Не указан пароль");
         }
         try {
             userService.getUserByLogin(req.login());
