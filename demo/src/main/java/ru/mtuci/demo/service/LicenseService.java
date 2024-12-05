@@ -14,8 +14,10 @@ import ru.mtuci.demo.exception.NotFoundException;
 import ru.mtuci.demo.model.Ticket;
 import ru.mtuci.demo.model.dto.ActivateLicenseRequest;
 import ru.mtuci.demo.model.dto.CreateLicenseRequest;
+import ru.mtuci.demo.model.dto.RenewLicenseRequest;
 import ru.mtuci.demo.model.entity.DeviceLicense;
 import ru.mtuci.demo.model.entity.License;
+import ru.mtuci.demo.model.entity.User;
 import ru.mtuci.demo.repo.LicenseRepo;
 
 @RequiredArgsConstructor
@@ -143,12 +145,12 @@ public class LicenseService {
 
     licenseHistoryService.recordLicenseChange(license, "Активирована", "Лицензия активирована на устройстве " + device.getMac());
 
-    return new Ticket(device.getUser().getEmail(), device.getMac(), license.getProduct().getId(), deviceLicense.getActivationDate(), license.getActivationDate().plusDays(license.getDuration()));
+    return new Ticket(device.getUser().getEmail(), device.getMac(), license.getProduct().getId(), license.getId(), deviceLicense.getActivationDate(), license.getActivationDate().plusDays(license.getDuration()));
   }
 
   public List<Ticket> getLicenseInfo(String mac) throws DemoException {
     var device = deviceService.getDeviceByMac(mac);
-    var currentUser = userService.getUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+    var currentUser = getCurrentUser();
     if (!device.getUser().getId().equals(currentUser.getId())) {
       throw new DemoException("Доступ запрещен");
     }
@@ -156,10 +158,42 @@ public class LicenseService {
     for (var deviceLicense : device.getDeviceLicenses()) {
       var license = deviceLicense.getLicense();
       if (!(license.getBlocked() || license.getProduct().getBlocked() || license.getActivationDate().plusDays(license.getDuration()).isBefore(LocalDateTime.now()))) {
-        tickets.add(new Ticket(device.getUser().getEmail(), device.getMac(), license.getProduct().getId(), deviceLicense.getActivationDate(), license.getActivationDate().plusDays(license.getDuration())));
+        tickets.add(new Ticket(device.getUser().getEmail(), device.getMac(), license.getProduct().getId(), license.getId(), deviceLicense.getActivationDate(), license.getActivationDate().plusDays(license.getDuration())));
       }
     }
     return tickets;
+  }
+
+  public Ticket renewLicense(RenewLicenseRequest req) throws DemoException {
+    var device = deviceService.getDeviceByMac(req.mac());
+    var license = getLicenseByActivationCode(req.activationCode());
+    if (license.getBlocked()) {
+      throw new DemoException("Лицензия заблокирована");
+    }
+    if (license.getProduct().getBlocked()) {
+      throw new DemoException("Продукт заблокирован");
+    }
+    if (license.getUser() == null) {
+      throw new DemoException("Лицензия не активирована");
+    }
+    var currentUser = getCurrentUser();
+    if (!license.getUser().getId().equals(currentUser.getId()) || !device.getUser().getId().equals(currentUser.getId())) {
+      throw new DemoException("Доступ запрещен");
+    }
+    if (license.getActivationDate().plusDays(license.getDuration()).isBefore(LocalDateTime.now())) {
+      throw new DemoException("Срок действия лицензии истек");
+    }
+    license.setDuration(license.getDuration() + license.getLicenseType().getDefaultDuration());
+    license = licenseRepo.save(license);
+    licenseHistoryService.recordLicenseChange(license, "Продлена", "Лицензия продлена");
+
+    deviceLicenseService.getDeviceLicenseByDeviceIdAndLicenseId(device.getId(), license.getId()); // Проверка, входит ли устройство в лицензию
+
+    return new Ticket(license.getUser().getEmail(), device.getMac(), license.getProduct().getId(), license.getId(), license.getActivationDate(), license.getActivationDate().plusDays(license.getDuration()));
+  }
+
+  private User getCurrentUser() throws NotFoundException {
+    return userService.getUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
   }
 
 }

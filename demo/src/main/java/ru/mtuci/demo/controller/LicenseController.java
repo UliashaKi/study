@@ -16,6 +16,7 @@ import ru.mtuci.demo.exception.DemoException;
 import ru.mtuci.demo.exception.NotFoundException;
 import ru.mtuci.demo.model.dto.ActivateLicenseRequest;
 import ru.mtuci.demo.model.dto.CreateLicenseRequest;
+import ru.mtuci.demo.model.dto.RenewLicenseRequest;
 import ru.mtuci.demo.model.entity.License;
 import ru.mtuci.demo.service.LicenseService;
 
@@ -84,10 +85,9 @@ public class LicenseController {
     return ResponseEntity.ok(licenseService.getLicenseInfo(mac));
   }
 
-  @PostMapping("/renew/{activationCode}")
-  public ResponseEntity<?> renewLicense(@PathVariable String activationCode) {
-    // TODO: implement renewLicense
-    throw new UnsupportedOperationException("Not implemented");
+  @PostMapping("/renew")
+  public ResponseEntity<?> renewLicense(@RequestBody RenewLicenseRequest req) throws DemoException {
+    return ResponseEntity.ok(licenseService.renewLicense(req));
   }
 
 }
