@@ -2,9 +2,11 @@ package ru.mtuci.demo.service;
 
 import java.util.List;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import ru.mtuci.demo.exception.DemoException;
 import ru.mtuci.demo.exception.NotFoundException;
 import ru.mtuci.demo.model.entity.Device;
 import ru.mtuci.demo.repo.DeviceRepo;
@@ -14,6 +16,7 @@ import ru.mtuci.demo.repo.DeviceRepo;
 public class DeviceService {
 
   private final DeviceRepo deviceRepo;
+  private final UserService userService;
 
   public Device saveDevice(Device device) {
     return deviceRepo.save(device);
@@ -37,6 +40,33 @@ public class DeviceService {
 
   public void removeDeviceById(long id) {
     deviceRepo.deleteById(id);
+  }
+
+  public Device registerOrUpdateDevice(String mac, String name) throws DemoException {
+    if (mac == null) {
+      throw new DemoException("Не указан mac-адрес");
+    }
+    var currentUser = userService.getUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+    var device = deviceRepo.findByMac(mac);
+    if (device.isPresent()) {
+      var existingDevice = device.get();
+      if (!existingDevice.getUser().getId().equals(currentUser.getId())) {
+        throw new DemoException("Устройство с таким mac-адресом уже зарегистрировано другим пользователем");
+      }
+      if (name != null) {
+        existingDevice.setName(name);
+      }
+      return deviceRepo.save(existingDevice);
+    }
+    if (name == null) {
+      throw new DemoException("Не указано название устройства");
+    }
+    var newDevice = new Device();
+    newDevice.setMac(mac);
+    newDevice.setName(name);
+    newDevice.setUser(currentUser);
+    return deviceRepo.save(newDevice);
+
   }
   
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import ru.mtuci.demo.exception.DemoException;
 import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.model.dto.ActivateLicenseRequest;
 import ru.mtuci.demo.model.dto.CreateLicenseRequest;
 import ru.mtuci.demo.model.entity.License;
 import ru.mtuci.demo.service.LicenseService;
@@ -74,15 +75,13 @@ public class LicenseController {
   }
 
   @PostMapping("/activate")
-  public ResponseEntity<?> activateLicense() {
-    // TODO: implement activateLicense
-    throw new UnsupportedOperationException("Not implemented");
+  public ResponseEntity<?> activateLicense(@RequestBody ActivateLicenseRequest req) throws DemoException {
+    return ResponseEntity.ok(licenseService.activateLicense(req));
   }
 
   @GetMapping("/info/{mac}")
-  public ResponseEntity<?> getLicenseInfo(@PathVariable String mac) {
-    // TODO: implement getLicenseInfo
-    throw new UnsupportedOperationException("Not implemented");
+  public ResponseEntity<?> getLicenseInfo(@PathVariable String mac) throws DemoException {
+    return ResponseEntity.ok(licenseService.getLicenseInfo(mac));
   }
 
   @PostMapping("/renew/{activationCode}")
