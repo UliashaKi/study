@@ -7,7 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.entity.License;
 import ru.mtuci.demo.model.entity.LicenseHistory;
 import ru.mtuci.demo.repo.LicenseHistoryRepo;
@@ -27,8 +27,8 @@ public class LicenseHistoryService {
     return licenseHistoryRepo.findAll();
   }
 
-  public LicenseHistory getLicenseHistoryById(long id) throws NotFoundException {
-    return licenseHistoryRepo.findById(id).orElseThrow(() -> new NotFoundException("История лицензии с таким id не найдена"));
+  public LicenseHistory getLicenseHistoryById(long id) throws EntityNotFoundException {
+    return licenseHistoryRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("История лицензии с таким id не найдена"));
   }
 
   public List<LicenseHistory> getLicenseHistoriesByLicenseId(long licenseId) {
@@ -43,7 +43,7 @@ public class LicenseHistoryService {
     licenseHistoryRepo.deleteById(id);
   }
 
-  public void recordLicenseChange(License license, String status, String description) throws NotFoundException {
+  public void recordLicenseChange(License license, String status, String description) throws EntityNotFoundException {
     var licenseHistory = new LicenseHistory();
     licenseHistory.setLicense(license);
     licenseHistory.setUser(userService.getUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName()));

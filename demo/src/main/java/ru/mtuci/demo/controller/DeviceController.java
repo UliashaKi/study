@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.entity.Device;
 import ru.mtuci.demo.service.DeviceService;
 
@@ -34,12 +34,12 @@ public class DeviceController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<?> getDeviceById(@PathVariable long id) throws NotFoundException {
+  public ResponseEntity<?> getDeviceById(@PathVariable long id) throws EntityNotFoundException {
     return ResponseEntity.ok(deviceService.getDeviceById(id));
   }
 
   @GetMapping("/mac/{mac}")
-  public ResponseEntity<?> getDeviceByMac(@PathVariable String mac) throws NotFoundException {
+  public ResponseEntity<?> getDeviceByMac(@PathVariable String mac) throws EntityNotFoundException {
     return ResponseEntity.ok(deviceService.getDeviceByMac(mac));
   }
 

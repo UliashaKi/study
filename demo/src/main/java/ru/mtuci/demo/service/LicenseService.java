@@ -9,8 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.DemoException;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.APIException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.Ticket;
 import ru.mtuci.demo.model.dto.ActivateLicenseRequest;
 import ru.mtuci.demo.model.dto.CreateLicenseRequest;
@@ -40,13 +40,13 @@ public class LicenseService {
     return licenseRepo.findAll();
   }
 
-  public License getLicenseById(long id) throws NotFoundException {
-    return licenseRepo.findById(id).orElseThrow(() -> new NotFoundException("Лицензия с таким id не найдена"));
+  public License getLicenseById(long id) throws EntityNotFoundException {
+    return licenseRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("Лицензия с таким id не найдена"));
   }
 
-  public License getLicenseByActivationCode(String activationCode) throws NotFoundException {
+  public License getLicenseByActivationCode(String activationCode) throws EntityNotFoundException {
     return licenseRepo.findByActivationCode(activationCode)
-        .orElseThrow(() -> new NotFoundException("Лицензия с таким кодом активации не найдена"));
+        .orElseThrow(() -> new EntityNotFoundException("Лицензия с таким кодом активации не найдена"));
   }
 
   public List<License> getLicensesByOwnerId(long ownerId) {
@@ -61,19 +61,19 @@ public class LicenseService {
     licenseRepo.deleteById(id);
   }
 
-  public License createLicense(CreateLicenseRequest req) throws DemoException {
+  public License createLicense(CreateLicenseRequest req) throws APIException {
     if (req.productId() == null) {
-      throw new DemoException("Не указан продукт");
+      throw new APIException("Не указан продукт");
     }
     if (req.ownerId() == null) {
-      throw new DemoException("Не указан владелец");
+      throw new APIException("Не указан владелец");
     }
     if (req.licenseTypeId() == null) {
-      throw new DemoException("Не указан тип лицензии");
+      throw new APIException("Не указан тип лицензии");
     }
     var product = productService.getProductById(req.productId());
     if (product.getBlocked()) {
-      throw new DemoException("Продукт заблокирован");
+      throw new APIException("Продукт заблокирован");
     }
     var owner = userService.getUserById(req.ownerId());
     var licenseType = licenseTypeService.getLicenseTypeById(req.licenseTypeId());
@@ -96,23 +96,25 @@ public class LicenseService {
     } else {
       license.setDescription(licenseType.getDescription());
     }
-    license.setActivationCode(UUID.randomUUID().toString());
+    do {
+      license.setActivationCode(UUID.randomUUID().toString());
+    } while (licenseRepo.findByActivationCode(license.getActivationCode()).isPresent());
     license.setBlocked(false);
     license = licenseRepo.save(license);
     licenseHistoryService.recordLicenseChange(license, "Создана", "Создана новая лицензия");
     return license;
   }
 
-  public Ticket activateLicense(ActivateLicenseRequest req) throws DemoException {
+  public Ticket activateLicense(ActivateLicenseRequest req) throws APIException {
     if (req.activationCode() == null) {
-      throw new DemoException("Не указан код активации");
+      throw new APIException("Не указан код активации");
     }
     var device = deviceService.registerOrUpdateDevice(req.mac(), req.name());
     var license = getLicenseByActivationCode(req.activationCode());
     checkLicenseBlock(license);
     if (license.getUser() != null) {
       if (!license.getUser().getId().equals(device.getUser().getId())) {
-        throw new DemoException("Лицензия принадлежит другому пользователю");
+        throw new APIException("Лицензия принадлежит другому пользователю");
       }
       checkLicenseExpiration(license);
     } else {
@@ -123,29 +125,29 @@ public class LicenseService {
 
     try {
       deviceLicenseService.getDeviceLicenseByDeviceIdAndLicenseId(device.getId(), license.getId());
-      throw new DemoException("Устройство уже было активировано");
-    } catch (NotFoundException e) {}
+      throw new APIException("Устройство уже было активировано");
+    } catch (EntityNotFoundException e) {
+      if (license.getDeviceCount() <= license.getDeviceLicenses().size()) {
+        throw new APIException("Достигнут лимит устройств для данной лицензии");
+      }
 
-    if (license.getDeviceCount() <= license.getDeviceLicenses().size()) {
-      throw new DemoException("Достигнут лимит устройств для данной лицензии");
-    }
+      var deviceLicense = new DeviceLicense();
+      deviceLicense.setDevice(device);
+      deviceLicense.setLicense(license);
+      deviceLicense.setActivationDate(LocalDateTime.now());
+      deviceLicense = deviceLicenseService.saveDeviceLicense(deviceLicense);
 
-    var deviceLicense = new DeviceLicense();
-    deviceLicense.setDevice(device);
-    deviceLicense.setLicense(license);
-    deviceLicense.setActivationDate(LocalDateTime.now());
-    deviceLicense = deviceLicenseService.saveDeviceLicense(deviceLicense);
+      licenseHistoryService.recordLicenseChange(license, "Активирована", "Лицензия активирована на устройстве " + device.getMac());
 
-    licenseHistoryService.recordLicenseChange(license, "Активирована", "Лицензия активирована на устройстве " + device.getMac());
-
-    return createTicket(deviceLicense);
+      return createTicket(deviceLicense);
+  }
   }
 
-  public List<Ticket> getLicenseInfo(String mac) throws DemoException {
+  public List<Ticket> getLicenseInfo(String mac) throws APIException {
     var device = deviceService.getDeviceByMac(mac);
     var currentUser = getCurrentUser();
     if (!device.getUser().getId().equals(currentUser.getId())) {
-      throw new DemoException("Доступ запрещен");
+      throw new APIException("Доступ запрещен");
     }
     List<Ticket> tickets = new ArrayList<>();
     for (var deviceLicense : device.getDeviceLicenses()) {
@@ -157,16 +159,16 @@ public class LicenseService {
     return tickets;
   }
 
-  public Ticket renewLicense(RenewLicenseRequest req) throws DemoException {
+  public Ticket renewLicense(RenewLicenseRequest req) throws APIException {
     var device = deviceService.getDeviceByMac(req.mac());
     var license = getLicenseByActivationCode(req.activationCode());
     checkLicenseBlock(license);
     if (license.getUser() == null) {
-      throw new DemoException("Лицензия не активирована");
+      throw new APIException("Лицензия не активирована");
     }
     var currentUser = getCurrentUser();
     if (!license.getUser().getId().equals(currentUser.getId()) || !device.getUser().getId().equals(currentUser.getId())) {
-      throw new DemoException("Доступ запрещен");
+      throw new APIException("Доступ запрещен");
     }
     checkLicenseExpiration(license);
     license.setDuration(license.getDuration() + license.getLicenseType().getDefaultDuration());
@@ -184,22 +186,22 @@ public class LicenseService {
     return new Ticket(license.getUser().getEmail(), device.getMac(), license.getProduct().getId(), license.getId(), license.getActivationDate(), license.getActivationDate().plusDays(license.getDuration()));
   }
 
-  private void checkLicenseBlock(License license) throws DemoException {
+  private void checkLicenseBlock(License license) throws APIException {
     if (license.getBlocked()) {
-      throw new DemoException("Лицензия заблокирована");
+      throw new APIException("Лицензия заблокирована");
     }
     if (license.getProduct().getBlocked()) {
-      throw new DemoException("Продукт заблокирован");
+      throw new APIException("Продукт заблокирован");
     }
   }
 
-  private void checkLicenseExpiration(License license) throws DemoException {
+  private void checkLicenseExpiration(License license) throws APIException {
     if (license.getActivationDate().plusDays(license.getDuration()).isBefore(LocalDateTime.now())) {
-      throw new DemoException("Срок действия лицензии истек");
+      throw new APIException("Срок действия лицензии истек");
     }
   }
 
-  private User getCurrentUser() throws NotFoundException {
+  private User getCurrentUser() throws EntityNotFoundException {
     return userService.getUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
   }
 

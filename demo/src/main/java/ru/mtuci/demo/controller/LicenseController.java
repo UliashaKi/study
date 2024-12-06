@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.DemoException;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.APIException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.dto.ActivateLicenseRequest;
 import ru.mtuci.demo.model.dto.CreateLicenseRequest;
 import ru.mtuci.demo.model.dto.RenewLicenseRequest;
@@ -41,13 +41,13 @@ public class LicenseController {
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/{id}")
-  public ResponseEntity<?> getLicenseById(@PathVariable long id) throws NotFoundException {
+  public ResponseEntity<?> getLicenseById(@PathVariable long id) throws EntityNotFoundException {
     return ResponseEntity.ok(licenseService.getLicenseById(id));
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/code/{activationCode}")
-  public ResponseEntity<?> getLicenseByActivationCode(@PathVariable String activationCode) throws NotFoundException {
+  public ResponseEntity<?> getLicenseByActivationCode(@PathVariable String activationCode) throws EntityNotFoundException {
     return ResponseEntity.ok(licenseService.getLicenseByActivationCode(activationCode));
   }
 
@@ -71,22 +71,22 @@ public class LicenseController {
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
-  public ResponseEntity<?> createLicense(@RequestBody CreateLicenseRequest req) throws DemoException {
+  public ResponseEntity<?> createLicense(@RequestBody CreateLicenseRequest req) throws APIException {
     return ResponseEntity.ok(licenseService.createLicense(req));
   }
 
   @PostMapping("/activate")
-  public ResponseEntity<?> activateLicense(@RequestBody ActivateLicenseRequest req) throws DemoException {
+  public ResponseEntity<?> activateLicense(@RequestBody ActivateLicenseRequest req) throws APIException {
     return ResponseEntity.ok(licenseService.activateLicense(req));
   }
 
   @GetMapping("/info/{mac}")
-  public ResponseEntity<?> getLicenseInfo(@PathVariable String mac) throws DemoException {
+  public ResponseEntity<?> getLicenseInfo(@PathVariable String mac) throws APIException {
     return ResponseEntity.ok(licenseService.getLicenseInfo(mac));
   }
 
   @PostMapping("/renew")
-  public ResponseEntity<?> renewLicense(@RequestBody RenewLicenseRequest req) throws DemoException {
+  public ResponseEntity<?> renewLicense(@RequestBody RenewLicenseRequest req) throws APIException {
     return ResponseEntity.ok(licenseService.renewLicense(req));
   }
 

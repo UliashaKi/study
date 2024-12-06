@@ -11,4 +11,9 @@ import ru.mtuci.demo.model.entity.User;
 public interface UserRepo extends JpaRepository<User, Long> {
     Optional<User> findByLogin(String login);
     Optional<User> findByEmail(String email);
+
+    boolean existsByLogin(String login);
+    boolean existsByEmail(String email);
+
+    Optional<User> findByLoginOrEmail(String login, String email);
 }

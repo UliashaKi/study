@@ -7,8 +7,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import ru.mtuci.demo.exception.AlreadyExistsException;
-import ru.mtuci.demo.exception.DemoException;
+import ru.mtuci.demo.exception.EntityAlreadyExistsException;
+import ru.mtuci.demo.exception.APIException;
 
 @RestControllerAdvice
 public class DemoExceptionHandler {
@@ -18,13 +18,13 @@ public class DemoExceptionHandler {
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
   }
 
-  @ExceptionHandler(AlreadyExistsException.class)
-  public ResponseEntity<String> handleAlreadyExistsExceptions(AlreadyExistsException ex) {
+  @ExceptionHandler(EntityAlreadyExistsException.class)
+  public ResponseEntity<String> handleAlreadyExistsExceptions(EntityAlreadyExistsException ex) {
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
   }
 
-  @ExceptionHandler(DemoException.class)
-  public ResponseEntity<String> handleDemoExceptions(DemoException ex) {
+  @ExceptionHandler(APIException.class)
+  public ResponseEntity<String> handleDemoExceptions(APIException ex) {
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
   }
 

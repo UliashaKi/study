@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.entity.DeviceLicense;
 import ru.mtuci.demo.repo.DeviceLicenseRepo;
 
@@ -23,12 +23,12 @@ public class DeviceLicenseService {
     return deviceLicenseRepo.findAll();
   }
 
-  public DeviceLicense getDeviceLicenseById(long id) throws NotFoundException {
-    return deviceLicenseRepo.findById(id).orElseThrow(() -> new NotFoundException("Лицензия устройства с таким id не найдена"));
+  public DeviceLicense getDeviceLicenseById(long id) throws EntityNotFoundException {
+    return deviceLicenseRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("Лицензия устройства с таким id не найдена"));
   }
 
-  public DeviceLicense getDeviceLicenseByDeviceIdAndLicenseId(long deviceId, long licenseId) throws NotFoundException {
-    return deviceLicenseRepo.findByDeviceIdAndLicenseId(deviceId, licenseId).orElseThrow(() -> new NotFoundException("Лицензия устройства с таким id и лицензией c таким id не найдена"));
+  public DeviceLicense getDeviceLicenseByDeviceIdAndLicenseId(long deviceId, long licenseId) throws EntityNotFoundException {
+    return deviceLicenseRepo.findByDeviceIdAndLicenseId(deviceId, licenseId).orElseThrow(() -> new EntityNotFoundException("Лицензия устройства с таким id и лицензией c таким id не найдена"));
   }
 
   public List<DeviceLicense> getDeviceLicensesByDeviceId(long deviceId) {

@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.entity.Product;
 import ru.mtuci.demo.repo.ProductRepo;
 
@@ -23,12 +23,12 @@ public class ProductService {
     return productRepo.findAll();
   }
 
-  public Product getProductById(long id) throws NotFoundException {
-    return productRepo.findById(id).orElseThrow(() -> new NotFoundException("Продукт с таким id не найден"));
+  public Product getProductById(long id) throws EntityNotFoundException {
+    return productRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("Продукт с таким id не найден"));
   }
 
-  public Product getProductByName(String name) throws NotFoundException {
-    return productRepo.findByName(name).orElseThrow(() -> new NotFoundException("Продукт с таким именем не найден"));
+  public Product getProductByName(String name) throws EntityNotFoundException {
+    return productRepo.findByName(name).orElseThrow(() -> new EntityNotFoundException("Продукт с таким именем не найден"));
   }
 
   public void removeProductById(long id) {

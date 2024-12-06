@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.entity.Product;
 import ru.mtuci.demo.service.ProductService;
 
@@ -34,12 +34,12 @@ public class ProductController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<?> getProductById(@PathVariable long id) throws NotFoundException {
+  public ResponseEntity<?> getProductById(@PathVariable long id) throws EntityNotFoundException {
     return ResponseEntity.ok(productService.getProductById(id));
   }
 
   @GetMapping("/name/{name}")
-  public ResponseEntity<?> getProductByName(@PathVariable String name) throws NotFoundException {
+  public ResponseEntity<?> getProductByName(@PathVariable String name) throws EntityNotFoundException {
     return ResponseEntity.ok(productService.getProductByName(name));
   }
 

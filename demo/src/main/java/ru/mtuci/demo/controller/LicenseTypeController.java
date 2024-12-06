@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.entity.LicenseType;
 import ru.mtuci.demo.service.LicenseTypeService;
 
@@ -34,12 +34,12 @@ public class LicenseTypeController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<?> getLicenseTypeById(@PathVariable long id) throws NotFoundException {
+  public ResponseEntity<?> getLicenseTypeById(@PathVariable long id) throws EntityNotFoundException {
     return ResponseEntity.ok(licenseTypeService.getLicenseTypeById(id));
   }
 
   @GetMapping("/name/{name}")
-  public ResponseEntity<?> getLicenseTypeByName(@PathVariable String name) throws NotFoundException {
+  public ResponseEntity<?> getLicenseTypeByName(@PathVariable String name) throws EntityNotFoundException {
     return ResponseEntity.ok(licenseTypeService.getLicenseTypeByName(name));
   }
 

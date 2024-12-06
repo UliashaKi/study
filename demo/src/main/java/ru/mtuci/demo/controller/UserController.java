@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.entity.User;
 import ru.mtuci.demo.service.UserService;
 
@@ -34,17 +34,17 @@ public class UserController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<?> getUserById(@PathVariable long id) throws NotFoundException {
+  public ResponseEntity<?> getUserById(@PathVariable long id) throws EntityNotFoundException {
     return ResponseEntity.ok(userService.getUserById(id));
   }
 
   @GetMapping("/login/{login}")
-  public ResponseEntity<?> getUserByLogin(@PathVariable String login) throws NotFoundException {
+  public ResponseEntity<?> getUserByLogin(@PathVariable String login) throws EntityNotFoundException {
     return ResponseEntity.ok(userService.getUserByLogin(login));
   }
 
   @GetMapping("/email/{email}")
-  public ResponseEntity<?> getUserByEmail(@PathVariable String email) throws NotFoundException {
+  public ResponseEntity<?> getUserByEmail(@PathVariable String email) throws EntityNotFoundException {
     return ResponseEntity.ok(userService.getUserByEmail(email));
   }
 

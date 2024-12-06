@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.entity.DeviceLicense;
 import ru.mtuci.demo.service.DeviceLicenseService;
 
@@ -34,12 +34,12 @@ public class DeviceLicenseController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<?> getDeviceLicenseById(@PathVariable long id) throws NotFoundException {
+  public ResponseEntity<?> getDeviceLicenseById(@PathVariable long id) throws EntityNotFoundException {
     return ResponseEntity.ok(deviceLicenseService.getDeviceLicenseById(id));
   }
 
   @GetMapping("/device/{deviceId}/license/{licenseId}")
-  public ResponseEntity<?> getDeviceLicenseByDeviceIdAndLicenseId(@PathVariable long deviceId, @PathVariable long licenseId) throws NotFoundException {
+  public ResponseEntity<?> getDeviceLicenseByDeviceIdAndLicenseId(@PathVariable long deviceId, @PathVariable long licenseId) throws EntityNotFoundException {
     return ResponseEntity.ok(deviceLicenseService.getDeviceLicenseByDeviceIdAndLicenseId(deviceId, licenseId));
   }
 

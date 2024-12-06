@@ -6,8 +6,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.DemoException;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.APIException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.entity.Device;
 import ru.mtuci.demo.repo.DeviceRepo;
 
@@ -26,12 +26,12 @@ public class DeviceService {
     return deviceRepo.findAll();
   }
 
-  public Device getDeviceById(long id) throws NotFoundException {
-    return deviceRepo.findById(id).orElseThrow(() -> new NotFoundException("Устройство с таким id не найдено"));
+  public Device getDeviceById(long id) throws EntityNotFoundException {
+    return deviceRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("Устройство с таким id не найдено"));
   }
 
-  public Device getDeviceByMac(String mac) throws NotFoundException {
-    return deviceRepo.findByMac(mac).orElseThrow(() -> new NotFoundException("Устройство с таким mac-адресом не найдено"));
+  public Device getDeviceByMac(String mac) throws EntityNotFoundException {
+    return deviceRepo.findByMac(mac).orElseThrow(() -> new EntityNotFoundException("Устройство с таким mac-адресом не найдено"));
   }
 
   public List<Device> getDevicesByUserId(long userId) {
@@ -42,16 +42,16 @@ public class DeviceService {
     deviceRepo.deleteById(id);
   }
 
-  public Device registerOrUpdateDevice(String mac, String name) throws DemoException {
+  public Device registerOrUpdateDevice(String mac, String name) throws APIException {
     if (mac == null) {
-      throw new DemoException("Не указан mac-адрес");
+      throw new APIException("Не указан mac-адрес");
     }
     var currentUser = userService.getUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
     var device = deviceRepo.findByMac(mac);
     if (device.isPresent()) {
       var existingDevice = device.get();
       if (!existingDevice.getUser().getId().equals(currentUser.getId())) {
-        throw new DemoException("Устройство с таким mac-адресом уже зарегистрировано другим пользователем");
+        throw new APIException("Устройство с таким mac-адресом уже зарегистрировано другим пользователем");
       }
       if (name != null) {
         existingDevice.setName(name);
@@ -59,7 +59,7 @@ public class DeviceService {
       return deviceRepo.save(existingDevice);
     }
     if (name == null) {
-      throw new DemoException("Не указано название устройства");
+      throw new APIException("Не указано название устройства");
     }
     var newDevice = new Device();
     newDevice.setMac(mac);

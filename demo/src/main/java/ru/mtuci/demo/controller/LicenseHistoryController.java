@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import ru.mtuci.demo.exception.NotFoundException;
+import ru.mtuci.demo.exception.EntityNotFoundException;
 import ru.mtuci.demo.model.entity.LicenseHistory;
 import ru.mtuci.demo.service.LicenseHistoryService;
 
@@ -34,7 +34,7 @@ public class LicenseHistoryController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<?> getLicenseHistoryById(@PathVariable long id) throws NotFoundException {
+  public ResponseEntity<?> getLicenseHistoryById(@PathVariable long id) throws EntityNotFoundException {
     return ResponseEntity.ok(licenseHistoryService.getLicenseHistoryById(id));
   }
 
