@@ -20,6 +20,9 @@ import ru.mtuci.demo.model.entity.License;
 import ru.mtuci.demo.model.entity.User;
 import ru.mtuci.demo.repo.LicenseRepo;
 
+//TODO: 1. Возможна ли коллизия при генерации кодов?
+//TODO: 2. catch (NotFoundException e) {} - доделать
+
 @RequiredArgsConstructor
 @Service
 public class LicenseService {

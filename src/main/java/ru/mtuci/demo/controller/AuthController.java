@@ -23,6 +23,8 @@ import ru.mtuci.demo.model.entity.User;
 import ru.mtuci.demo.provider.JWTProvider;
 import ru.mtuci.demo.service.UserService;
 
+//TODO: 1. Много логики в контроллере. Вынести в сервисы
+
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 @RestController

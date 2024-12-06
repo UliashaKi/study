@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 
+//TODO: 1. Интересная реализация.
+
 @Component
 public class DigitalSignatureProvider {
 
