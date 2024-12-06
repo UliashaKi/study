@@ -109,19 +109,12 @@ public class LicenseService {
     }
     var device = deviceService.registerOrUpdateDevice(req.mac(), req.name());
     var license = getLicenseByActivationCode(req.activationCode());
-    if (license.getBlocked()) {
-      throw new DemoException("Лицензия заблокирована");
-    }
-    if (license.getProduct().getBlocked()) {
-      throw new DemoException("Продукт заблокирован");
-    }
+    checkLicenseBlock(license);
     if (license.getUser() != null) {
       if (!license.getUser().getId().equals(device.getUser().getId())) {
         throw new DemoException("Лицензия принадлежит другому пользователю");
       }
-      if (license.getActivationDate().plusDays(license.getDuration()).isBefore(LocalDateTime.now())) {
-        throw new DemoException("Срок действия лицензии истек");
-      }
+      checkLicenseExpiration(license);
     } else {
       license.setUser(device.getUser());
       license.setActivationDate(LocalDateTime.now());
@@ -145,7 +138,7 @@ public class LicenseService {
 
     licenseHistoryService.recordLicenseChange(license, "Активирована", "Лицензия активирована на устройстве " + device.getMac());
 
-    return new Ticket(device.getUser().getEmail(), device.getMac(), license.getProduct().getId(), license.getId(), deviceLicense.getActivationDate(), license.getActivationDate().plusDays(license.getDuration()));
+    return createTicket(deviceLicense);
   }
 
   public List<Ticket> getLicenseInfo(String mac) throws DemoException {
@@ -158,7 +151,7 @@ public class LicenseService {
     for (var deviceLicense : device.getDeviceLicenses()) {
       var license = deviceLicense.getLicense();
       if (!(license.getBlocked() || license.getProduct().getBlocked() || license.getActivationDate().plusDays(license.getDuration()).isBefore(LocalDateTime.now()))) {
-        tickets.add(new Ticket(device.getUser().getEmail(), device.getMac(), license.getProduct().getId(), license.getId(), deviceLicense.getActivationDate(), license.getActivationDate().plusDays(license.getDuration())));
+        tickets.add(createTicket(deviceLicense));
       }
     }
     return tickets;
@@ -167,12 +160,7 @@ public class LicenseService {
   public Ticket renewLicense(RenewLicenseRequest req) throws DemoException {
     var device = deviceService.getDeviceByMac(req.mac());
     var license = getLicenseByActivationCode(req.activationCode());
-    if (license.getBlocked()) {
-      throw new DemoException("Лицензия заблокирована");
-    }
-    if (license.getProduct().getBlocked()) {
-      throw new DemoException("Продукт заблокирован");
-    }
+    checkLicenseBlock(license);
     if (license.getUser() == null) {
       throw new DemoException("Лицензия не активирована");
     }
@@ -180,16 +168,35 @@ public class LicenseService {
     if (!license.getUser().getId().equals(currentUser.getId()) || !device.getUser().getId().equals(currentUser.getId())) {
       throw new DemoException("Доступ запрещен");
     }
-    if (license.getActivationDate().plusDays(license.getDuration()).isBefore(LocalDateTime.now())) {
-      throw new DemoException("Срок действия лицензии истек");
-    }
+    checkLicenseExpiration(license);
     license.setDuration(license.getDuration() + license.getLicenseType().getDefaultDuration());
     license = licenseRepo.save(license);
     licenseHistoryService.recordLicenseChange(license, "Продлена", "Лицензия продлена");
 
-    deviceLicenseService.getDeviceLicenseByDeviceIdAndLicenseId(device.getId(), license.getId()); // Проверка, входит ли устройство в лицензию
+    var deviceLicense = deviceLicenseService.getDeviceLicenseByDeviceIdAndLicenseId(device.getId(), license.getId());
 
+    return createTicket(deviceLicense);
+  }
+
+  private Ticket createTicket(DeviceLicense deviceLicense) {
+    var license = deviceLicense.getLicense();
+    var device = deviceLicense.getDevice();
     return new Ticket(license.getUser().getEmail(), device.getMac(), license.getProduct().getId(), license.getId(), license.getActivationDate(), license.getActivationDate().plusDays(license.getDuration()));
+  }
+
+  private void checkLicenseBlock(License license) throws DemoException {
+    if (license.getBlocked()) {
+      throw new DemoException("Лицензия заблокирована");
+    }
+    if (license.getProduct().getBlocked()) {
+      throw new DemoException("Продукт заблокирован");
+    }
+  }
+
+  private void checkLicenseExpiration(License license) throws DemoException {
+    if (license.getActivationDate().plusDays(license.getDuration()).isBefore(LocalDateTime.now())) {
+      throw new DemoException("Срок действия лицензии истек");
+    }
   }
 
   private User getCurrentUser() throws NotFoundException {
