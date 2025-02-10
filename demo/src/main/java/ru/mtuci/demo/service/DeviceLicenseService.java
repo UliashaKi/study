@@ -28,7 +28,7 @@ public class DeviceLicenseService {
   }
 
   public DeviceLicense getDeviceLicenseByDeviceIdAndLicenseId(long deviceId, long licenseId) throws EntityNotFoundException {
-    return deviceLicenseRepo.findByDeviceIdAndLicenseId(deviceId, licenseId).orElseThrow(() -> new EntityNotFoundException("Лицензия устройства с таким id и лицензией c таким id не найдена"));
+    return deviceLicenseRepo.findByDeviceIdAndLicenseId(deviceId, licenseId).orElse(null);
   }
 
   public List<DeviceLicense> getDeviceLicensesByDeviceId(long deviceId) {

@@ -14,4 +14,13 @@ spring:
 
 jwt:
   secret: ${SECRET}
-  expiration: 3600000
+  expiration: 36000000
+
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: classpath:server.jks
+    key-store-type: JKS
+    key-store-password: serverPass
+    key-alias: server
